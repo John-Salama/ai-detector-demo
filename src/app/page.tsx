@@ -16,6 +16,17 @@ import {
 } from "lucide-react";
 import { detectAIText } from "ai-text-detector";
 
+// Define interface for analysis result
+interface AnalysisResult {
+  isAIGenerated: boolean;
+  confidence: number;
+  reasons: string[];
+  score: number;
+  error?: string;
+  perplexityScore: number;
+  burstinessScore: number;
+}
+
 // Safe wrapper function to handle short text
 const safeDetectAI = (text: string) => {
   if (text.trim().length < 50) {
@@ -66,7 +77,7 @@ const predefinedExamples = {
 
 export default function Home() {
   const [text, setText] = useState("");
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedExample, setSelectedExample] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(true);
@@ -238,7 +249,7 @@ export default function Home() {
             Try These Examples:
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {Object.entries(predefinedExamples).map(([key, value]) => (
+            {Object.entries(predefinedExamples).map(([key]) => (
               <button
                 key={key}
                 onClick={() => loadExample(key)}
