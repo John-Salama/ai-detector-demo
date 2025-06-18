@@ -13,6 +13,7 @@ import {
   Sparkles,
   Zap,
   Shield,
+  Check,
 } from "lucide-react";
 import { detectAIText } from "ai-text-detector";
 
@@ -81,6 +82,9 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedExample, setSelectedExample] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(true);
+  const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   const analyzeText = async () => {
     if (!text.trim()) return;
@@ -109,8 +113,13 @@ export default function Home() {
     setSelectedExample(null);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = (text: string, buttonId: string = "default") => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedStates((prev) => ({ ...prev, [buttonId]: true }));
+      setTimeout(() => {
+        setCopiedStates((prev) => ({ ...prev, [buttonId]: false }));
+      }, 2000);
+    });
   };
 
   const getResultColor = (isAI: boolean) => {
@@ -308,15 +317,24 @@ export default function Home() {
                   </label>
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => copyToClipboard(text)}
+                      onClick={() => copyToClipboard(text, "textarea")}
                       className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${
-                        darkMode
+                        copiedStates.textarea
+                          ? darkMode
+                            ? "text-green-400 bg-green-400/20 scale-110"
+                            : "text-green-600 bg-green-100 scale-110"
+                          : darkMode
                           ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
                           : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                       }`}
                       disabled={!text}
+                      title={copiedStates.textarea ? "Copied!" : "Copy text"}
                     >
-                      <Copy className="w-4 h-4" />
+                      {copiedStates.textarea ? (
+                        <Check className="w-4 h-4 animate-pulse" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
                     </button>
                     <button
                       onClick={clearAll}
@@ -356,20 +374,19 @@ export default function Home() {
                   <button
                     onClick={analyzeText}
                     disabled={!text.trim() || text.length < 50 || isAnalyzing}
-                    className="group relative px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:hover:scale-100 disabled:hover:shadow-none flex items-center space-x-2 overflow-hidden"
+                    className="group relative px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:hover:scale-100 disabled:hover:shadow-none flex items-center space-x-2"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     {isAnalyzing ? (
                       <>
-                        <div className="relative animate-spin">
+                        <div className="animate-spin">
                           <Zap className="w-5 h-5" />
                         </div>
-                        <span className="relative">Neural Analysis...</span>
+                        <span>Neural Analysis...</span>
                       </>
                     ) : (
                       <>
-                        <Wand2 className="w-5 h-5 relative" />
-                        <span className="relative">Analyze Text</span>
+                        <Wand2 className="w-5 h-5" />
+                        <span>Analyze Text</span>
                       </>
                     )}
                   </button>
@@ -595,7 +612,7 @@ export default function Home() {
               },
               {
                 icon: Shield,
-                title: "99.2% Accuracy",
+                title: "83.2% Accuracy",
                 description:
                   "Enhanced detection with improved recognition of emotional, informal, and creative writing patterns.",
                 gradient: "from-emerald-400 to-green-500",
@@ -688,15 +705,31 @@ export default function Home() {
                     <div className="absolute top-2 right-2">
                       <button
                         onClick={() =>
-                          copyToClipboard("npm install ai-text-detector")
+                          copyToClipboard(
+                            "npm install ai-text-detector",
+                            "npm-install"
+                          )
                         }
                         className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${
-                          darkMode
+                          copiedStates["npm-install"]
+                            ? darkMode
+                              ? "text-green-400 bg-green-400/20 scale-110"
+                              : "text-green-600 bg-green-100 scale-110"
+                            : darkMode
                             ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
                             : "text-gray-500 hover:text-gray-700 hover:bg-white"
                         }`}
+                        title={
+                          copiedStates["npm-install"]
+                            ? "Copied!"
+                            : "Copy command"
+                        }
                       >
-                        <Copy className="w-4 h-4" />
+                        {copiedStates["npm-install"] ? (
+                          <Check className="w-4 h-4 animate-pulse" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                     <code
@@ -725,16 +758,30 @@ export default function Home() {
                     <div className="absolute top-2 right-2">
                       <button
                         onClick={() =>
-                          copyToClipboard(`import { detectAIText } from 'ai-text-detector';
-const result = detectAIText(text);`)
+                          copyToClipboard(
+                            `import { detectAIText } from 'ai-text-detector';
+const result = detectAIText(text);`,
+                            "code-usage"
+                          )
                         }
                         className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${
-                          darkMode
+                          copiedStates["code-usage"]
+                            ? darkMode
+                              ? "text-green-400 bg-green-400/20 scale-110"
+                              : "text-green-600 bg-green-100 scale-110"
+                            : darkMode
                             ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
                             : "text-gray-500 hover:text-gray-700 hover:bg-white"
                         }`}
+                        title={
+                          copiedStates["code-usage"] ? "Copied!" : "Copy code"
+                        }
                       >
-                        <Copy className="w-4 h-4" />
+                        {copiedStates["code-usage"] ? (
+                          <Check className="w-4 h-4 animate-pulse" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                     <code
@@ -754,12 +801,11 @@ const result = detectAIText(text);`}
                   href="https://www.npmjs.com/package/ai-text-detector"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-blue-700 transition-all duration-300 hover:scale-105 hover:shadow-lg overflow-hidden"
+                  className="group inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <span className="relative">View on NPM</span>
+                  <span>View on NPM</span>
                   <svg
-                    className="w-5 h-5 relative transition-transform group-hover:translate-x-1"
+                    className="w-5 h-5 transition-transform group-hover:translate-x-1"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -828,8 +874,7 @@ const result = detectAIText(text);`}
                   darkMode ? "text-gray-500" : "text-gray-600"
                 }`}
               >
-                © 2024 AI Text Detector Demo • MIT License • Powered by Neural
-                Networks
+                © 2025 AI Text Detector Demo • MIT License • Powered by JS
               </p>
             </div>
 
@@ -857,7 +902,7 @@ const result = detectAIText(text);`}
                     darkMode ? "text-gray-400" : "text-gray-500"
                   }`}
                 >
-                  99.2% Accuracy Rate
+                  83.2% Accuracy Rate
                 </span>
               </div>
             </div>
